@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KIT P-REV - Kit Pembelajaran Ayat Pasif</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- FontAwesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+
+<style>
+body {
+font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.font-serif-title {
+font-family: 'Playfair Display', serif;
+}
+/* Custom print styling for Sijil */
+@media print {
+body * {
+visibility: hidden;
+}
+#print-area, #print-area * {
+visibility: visible;
+}
+#print-area {
+position: absolute;
+left: 0;
+top: 0;
+width: 100%;
+border: none;
+box-shadow: none;
+background: white !important;
+color: black !important;
+}
+.no-print {
+display: none !important;
+}
+}
+/* Color coding glow effects */
+.glow-blue { box-shadow: 0 0 15px rgba(59, 130, 246, 0.25); }
+.glow-green { box-shadow: 0 0 15px rgba(34, 197, 94, 0.25); }
+.glow-yellow { box-shadow: 0 0 15px rgba(234, 179, 8, 0.25); }
+.glow-purple { box-shadow: 0 0 15px rgba(168, 85, 247, 0.25); }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col selection:bg-teal-500 selection:text-white">
+
+<!-- HEADER UTAMA -->
+<header class="bg-gradient-to-r from-teal-600 via-emerald-600 to-cyan-600 text-white py-4 px-6 shadow-md no-print">
+<div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+<div class="flex items-center space-x-3 cursor-pointer" onclick="navigate('utama')">
+<div class="bg-white p-2.5 rounded-2xl shadow-lg text-teal-700 font-extrabold text-2xl">
+<i class="fa-solid fa-graduation-cap"></i>
+</div>
+<div>
+<h1 class="text-2xl font-extrabold tracking-wider">KIT P-REV</h1>
+<p class="text-xs text-teal-100 font-medium"><i class="fa-solid fa-star text-yellow-300"></i> Kuasai Kemahiran Membina Ayat Pasif</p>
+</div>
+</div>
+
+<!-- Profile Info Widget (Kanan) -->
+<div id="profile-widget" class="hidden flex items-center space-x-4 bg-teal-800/40 px-4 py-2 rounded-2xl border border-teal-400/20">
+<div class="text-right">
+<p class="text-[10px] text-teal-200 uppercase tracking-widest font-bold">Profil Aktif</p>
+<p id="widget-student-info" class="font-bold text-sm text-white">Pelajar</p>
+</div>
+<div class="h-8 w-px bg-teal-400/40"></div>
+<div class="text-center">
+<p class="text-[10px] text-teal-200 uppercase tracking-widest font-bold">⭐ Skor</p>
+<p id="widget-student-score" class="font-black text-amber-300 text-base">0 XP</p>
+</div>
+<button onclick="openSyncModal()" class="text-white hover:text-amber-300 transition-colors" title="Pindah Data Peranti">
+<i class="fa-solid fa-shuffle"></i>
+</button>
+</div>
+</div>
+</header>
+
+<!-- ALERTS / TOASTS NOTIFICATION -->
+<div id="custom-toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl text-sm font-bold flex items-center space-x-2 border border-slate-700 hidden transition-all duration-300">
+<span id="toast-icon">🔔</span>
+<span id="toast-message">Mesej berjaya disimpan!</span>
+</div>
+
+<!-- MAIN CONTAINER -->
+<main class="flex-grow p-4 md:p-6 max-w-7xl w-full mx-auto">
+
+<!-- =========================================================
+1. SCREEN: LOG MASUK MURID (LOCAL FIRST)
+========================================================= -->
+<section id="screen-login" class="max-w-md mx-auto mt-10 bg-white p-8 rounded-3xl shadow-2xl border border-slate-100 transition-all duration-300">
+<div class="text-center mb-6">
+<span class="text-6xl text-teal-600"><i class="fa-solid fa-book-open-reader"></i></span>
+<h2 class="text-2xl font-extrabold text-slate-800 mt-4">Log Masuk Murid</h2>
+<p class="text-sm text-slate-500 mt-1">Sila masukkan nama dan kelas anda untuk memulakan reviu bersama KIT P-REV!</p>
+</div>
+
+<form id="login-form" class="space-y-5">
+<div>
+<label class="block text-sm font-bold text-slate-700 mb-1"><i class="fa-solid fa-user text-teal-500 mr-2"></i>Nama Penuh Murid</label>
+<input 
+id="input-nama" 
+type="text" 
+placeholder="Contoh: Muhammad Ali bin Ahmad"
+class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none transition font-medium"
+required
+>
+</div>
+
+<div>
+<label class="block text-sm font-bold text-slate-700 mb-1"><i class="fa-solid fa-school text-teal-500 mr-2"></i>Kelas</label>
+<input 
+id="input-kelas" 
+type="text" 
+placeholder="Contoh: 5 Cemerlang / Tingkatan 1 Amanah"
+class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-teal-500 focus:outline-none transition font-medium"
+required
+>
+</div>
+
+<button
+type="submit"
+class="w-full py-4 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-extrabold rounded-2xl shadow-lg hover:shadow-teal-500/20 transition duration-150 transform active:scale-95 flex items-center justify-center space-x-2 text-base"
+>
+<span>Mula Belajar & Main</span>
+<i class="fa-solid fa-rocket animate-bounce"></i>
+</button>
+</form>
+
+<div class="relative flex py-5 items-center">
+<div class="flex-grow border-t border-slate-200"></div>
+<span class="flex-shrink mx-4 text-slate-400 text-xs font-bold uppercase">Pindah Data Dari Peranti Lain?</span>
+<div class="flex-grow border-t border-slate-200"></div>
+</div>
+
+<div class="text-center">
+<button onclick="openSyncModal()" class="text-xs text-teal-600 hover:text-teal-800 font-bold underline">
+<i class="fa-solid fa-file-import mr-1"></i>Masukkan Kod Kemajuan Anda Di Sini
+</button>
+</div>
+</section>
+
+<!-- =========================================================
+2. SCREEN: MENU UTAMA
+========================================================= -->
+<section id="screen-utama" class="hidden space-y-6">
+<!-- Banner Aluan Dinamik -->
+<div class="bg-gradient-to-br from-slate-950 via-slate-900 to-slate-850 text-white rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+<div class="absolute top-0 right-0 transform translate-x-10 -translate-y-10 w-40 h-40 bg-teal-500/10 rounded-full blur-2xl"></div>
+<div class="absolute bottom-0 left-0 transform -translate-x-10 translate-y-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl"></div>
+
+<div class="relative z-10 space-y-3">
+<span class="bg-teal-500 text-white text-[10px] tracking-wider font-extrabold uppercase px-3 py-1 rounded-full"><i class="fa-solid fa-house-chimney mr-1"></i> Utama</span>
+<h2 class="text-2xl md:text-3xl font-extrabold">Selamat Kembali, <span id="welcome-student-name" class="text-teal-300">Pelajar</span>! 👋</h2>
+<p class="text-slate-300 text-sm md:text-base leading-relaxed max-w-2xl">Kuasai penukaran **Ayat Aktif kepada Ayat Pasif** menggunakan pendekatan warna visual, formula OHSK & OKSK interaktif dalam satu portal pintar.</p>
+<div id="badges-container" class="flex flex-wrap gap-2 pt-2">
+<!-- Badges loaded dynamically -->
+</div>
+</div>
+</div>
+
+<!-- Grid Menu Inovasi -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Menu: Nota Slaid -->
+<button onclick="navigate('nota')" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-teal-500/30 hover:shadow-2xl transition-all duration-300 text-left group flex flex-col justify-between shadow-sm">
+<div>
+<div class="bg-teal-50 text-teal-600 w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+<i class="fa-solid fa-book-open"></i>
+</div>
+<h3 class="font-extrabold text-lg text-slate-800 mb-1">Nota Slaid Interaktif</h3>
+<p class="text-xs text-slate-500 leading-relaxed">Belajar subjek, predikat, objek, keterangan serta formula OHSK & OKSK melalui kad visual menarik.</p>
+</div>
+<div class="mt-6 text-xs font-bold text-teal-600 flex items-center space-x-1 group-hover:translate-x-2 transition-transform">
+<span>Mulakan Bacaan</span>
+<i class="fa-solid fa-arrow-right"></i>
+</div>
+</button>
+
+<!-- Menu: Belajar Ayat Aktif (Kod Warna) -->
+<button onclick="navigate('aktif')" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-blue-500/30 hover:shadow-2xl transition-all duration-300 text-left group flex flex-col justify-between shadow-sm">
+<div>
+<div class="bg-blue-50 text-blue-600 w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+<i class="fa-solid fa-palette"></i>
+</div>
+<h3 class="font-extrabold text-lg text-slate-800 mb-1">Belajar Ayat Aktif (Warna)</h3>
+<p class="text-xs text-slate-500 leading-relaxed">Pengekodan warna standard: Subjek (Biru), Kata Kerja (Hijau), Objek (Kuning), dan Keterangan (Ungu).</p>
+</div>
+<div class="mt-6 text-xs font-bold text-blue-600 flex items-center space-x-1 group-hover:translate-x-2 transition-transform">
+<span>Lihat Peta Warna</span>
+<i class="fa-solid fa-arrow-right"></i>
+</div>
+</button>
+
+<!-- Menu: Bijak Ayat Pasif (Formula) -->
+<button onclick="navigate('pasif')" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-purple-500/30 hover:shadow-2xl transition-all duration-300 text-left group flex flex-col justify-between shadow-sm">
+<div>
+<div class="bg-purple-50 text-purple-600 w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+<i class="fa-solid fa-flask"></i>
+</div>
+<h3 class="font-extrabold text-lg text-slate-800 mb-1">Bijak Formula Pasif</h3>
+<p class="text-xs text-slate-500 leading-relaxed">Fahami formula OHSK bagi KGND 1 & 2 serta formula OKSK bagi KGND 3 secara praktikal.</p>
+</div>
+<div class="mt-6 text-xs font-bold text-purple-600 flex items-center space-x-1 group-hover:translate-x-2 transition-transform">
+<span>Lihat Formula</span>
+<i class="fa-solid fa-arrow-right"></i>
+</div>
+</button>
+
+<!-- Menu: Gamifikasi Latih Tubi -->
+<button onclick="navigate('game')" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-amber-500/30 hover:shadow-2xl transition-all duration-300 text-left group flex flex-col justify-between shadow-sm">
+<div>
+<div class="bg-amber-50 text-amber-600 w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+<i class="fa-solid fa-gamepad"></i>
+</div>
+<h3 class="font-extrabold text-lg text-slate-800 mb-1">Permainan Digital (3 Aras)</h3>
+<p class="text-xs text-slate-500 leading-relaxed">Pilih, susun, dan bina semula ayat aktif menjadi pasif menggunakan formula yang dipelajari.</p>
+</div>
+<div class="mt-6 text-xs font-bold text-amber-600 flex items-center space-x-1 group-hover:translate-x-2 transition-transform">
+<span>Mula Cabaran</span>
+<i class="fa-solid fa-arrow-right"></i>
+</div>
+</button>
+
+<!-- Menu: Jom Chat Bersama AI -->
+<button onclick="navigate('ai')" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-pink-500/30 hover:shadow-2xl transition-all duration-300 text-left group flex flex-col justify-between shadow-sm">
+<div>
+<div class="bg-pink-50 text-pink-600 w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+<i class="fa-solid fa-robot"></i>
+</div>
+<h3 class="font-extrabold text-lg text-slate-800 mb-1">Jom Chat Bersama AI</h3>
+<p class="text-xs text-slate-500 leading-relaxed">Tanya soalan, semak latihan, atau sembang santai tentang ayat pasif bersama Cikgu AI.</p>
+</div>
+<div class="mt-6 text-xs font-bold text-pink-600 flex items-center space-x-1 group-hover:translate-x-2 transition-transform">
+<span>Sembang Sekarang</span>
+<i class="fa-solid fa-arrow-right"></i>
+</div>
+</button>
+
+<!-- Menu: Sijil & Laporan Perkembangan -->
+<button onclick="navigate('sijil')" class="bg-white p-6 rounded-3xl border border-slate-100 hover:border-emerald-500/30 hover:shadow-2xl transition-all duration-300 text-left group flex flex-col justify-between shadow-sm">
+<div>
+<div class="bg-emerald-50 text-emerald-600 w-12 h-12 rounded-2xl flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform">
+<i class="fa-solid fa-certificate"></i>
+</div>
+<h3 class="font-extrabold text-lg text-slate-800 mb-1">Laporan & Sijil Digital</h3>
+<p class="text-xs text-slate-500 leading-relaxed">Semak keputusan, jumlah markah, status penyelesaian, dan cetak sijil penghargaan anda.</p>
+</div>
+<div class="mt-6 text-xs font-bold text-emerald-600 flex items-center space-x-1 group-hover:translate-x-2 transition-transform">
+<span>Tengok Sijil</span>
+<i class="fa-solid fa-arrow-right"></i>
+</div>
+</button>
+</div>
+
+<!-- Global Scoreboard Button Link -->
+<div class="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+<button onclick="navigate('score')" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-extrabold rounded-2xl shadow-md transition transform active:scale-95 text-sm flex items-center justify-center space-x-2">
+<i class="fa-solid fa-trophy text-yellow-400"></i>
+<span>Tengok Kedudukan Murid Teratas (Tempatan)</span>
+</button>
+<button onclick="openSyncModal()" class="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-extrabold rounded-2xl shadow-md transition transform active:scale-95 text-sm flex items-center justify-center space-x-2">
+<i class="fa-solid fa-shuffle"></i>
+<span>Pindah / Kongsi Kod Kemajuan</span>
+</button>
+</div>
+</section>
+
+<!-- =========================================================
+3. SCREEN: NOTA SLAID INTERAKTIF
+========================================================= -->
+<section id="screen-nota" class="hidden max-w-3xl mx-auto space-y-6">
+<div class="flex justify-between items-center">
+<button onclick="navigate('utama')" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-sm font-bold hover:bg-slate-300 transition flex items-center space-x-2">
+<i class="fa-solid fa-arrow-left-long"></i>
+<span>Kembali</span>
+</button>
+<div id="slide-tracker" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Slaid 1 daripada 4</div>
+</div>
+
+<!-- Slaid Content Area -->
+<div class="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-100 min-h-[380px] flex flex-col justify-between">
+<div id="slide-content">
+<!-- Dinamik dimasukkan oleh JS -->
+</div>
+
+<!-- Slide Nav Controls -->
+<div class="flex justify-between items-center mt-8 border-t pt-4">
+<button id="btn-prev-slide" onclick="changeSlide(-1)" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-200 transition">
+◀️ Sebelumnya
+</button>
+<div id="slide-indicators" class="flex space-x-1.5">
+<!-- Dot indicators will be here -->
+</div>
+<button id="btn-next-slide" onclick="changeSlide(1)" class="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-sm font-bold transition">
+Seterusnya ▶️
+</button>
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+4. SCREEN: BELAJAR AYAT AKTIF & KOD WARNA
+========================================================= -->
+<section id="screen-aktif" class="hidden max-w-4xl mx-auto space-y-6">
+<div class="flex justify-between items-center">
+<button onclick="navigate('utama')" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-sm font-bold hover:bg-slate-300 transition flex items-center space-x-2">
+<i class="fa-solid fa-arrow-left-long"></i>
+<span>Kembali</span>
+</button>
+</div>
+
+<div class="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-100 space-y-6">
+<div class="border-b pb-4">
+<h3 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+<i class="fa-solid fa-palette text-blue-600"></i>
+<span>Sistem Pengekodan Warna Unsur Ayat</span>
+</h3>
+<p class="text-sm text-slate-500">Kunci penguasaan pembinaan ayat pasif adalah mengenalpasti unsur-unsur utama dalam ayat aktif dahulu!</p>
+</div>
+
+<!-- Kad Petunjuk Warna -->
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+<div class="p-4 rounded-2xl border border-blue-200 bg-blue-50/50 glow-blue">
+<span class="px-2.5 py-0.5 bg-blue-500 text-white font-extrabold text-[10px] rounded-full uppercase">Subjek</span>
+<h4 class="font-bold text-slate-800 mt-2">BIRU</h4>
+<p class="text-xs text-slate-600 mt-1">Sesiapa yang membuat atau melakukan perbuatan dalam ayat (Pelaku).</p>
+</div>
+<div class="p-4 rounded-2xl border border-green-200 bg-green-50/50 glow-green">
+<span class="px-2.5 py-0.5 bg-green-500 text-white font-extrabold text-[10px] rounded-full uppercase">Kata Kerja</span>
+<h4 class="font-bold text-slate-800 mt-2">HIJAU</h4>
+<p class="text-xs text-slate-600 mt-1">Perbuatan yang dilakukan (Biasa mempunyai imbuhan meN-).</p>
+</div>
+<div class="p-4 rounded-2xl border border-yellow-200 bg-yellow-50/50 glow-yellow">
+<span class="px-2.5 py-0.5 bg-yellow-500 text-slate-900 font-extrabold text-[10px] rounded-full uppercase">Objek</span>
+<h4 class="font-bold text-slate-800 mt-2">KUNING</h4>
+<p class="text-xs text-slate-600 mt-1">Benda atau perkara yang menjadi mangsa / kesan perbuatan.</p>
+</div>
+<div class="p-4 rounded-2xl border border-purple-200 bg-purple-50/50 glow-purple">
+<span class="px-2.5 py-0.5 bg-purple-500 text-white font-extrabold text-[10px] rounded-full uppercase">Keterangan</span>
+<h4 class="font-bold text-slate-800 mt-2">UNGU</h4>
+<p class="text-xs text-slate-600 mt-1">Maklumat tambahan tentang tempat, waktu, cara atau alat perbuatan.</p>
+</div>
+</div>
+
+<!-- Contoh Analisis Ayat -->
+<div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 space-y-4">
+<h4 class="font-extrabold text-slate-800"><i class="fa-solid fa-magnifying-glass text-teal-600 mr-2"></i>Contoh Analisis Unsur Ayat Aktif:</h4>
+
+<!-- Contoh 1 -->
+<div class="p-4 bg-white rounded-xl border border-slate-200 space-y-3">
+<span class="bg-indigo-100 text-indigo-800 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">Ayat 1</span>
+<p class="text-base md:text-lg font-semibold leading-relaxed">
+"Ahmad sedang memancing ikan di tepi sungai semalam."
+</p>
+<div class="flex flex-wrap gap-2 pt-1">
+<span class="px-3 py-1 bg-blue-100 text-blue-800 border border-blue-300 rounded-full text-xs font-bold">Ahmad (Subjek)</span>
+<span class="px-3 py-1 bg-green-100 text-green-800 border border-green-300 rounded-full text-xs font-bold">sedang memancing (Kata Kerja)</span>
+<span class="px-3 py-1 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-full text-xs font-bold">ikan (Objek)</span>
+<span class="px-3 py-1 bg-purple-100 text-purple-800 border border-purple-300 rounded-full text-xs font-bold">di tepi sungai semalam (Keterangan)</span>
+</div>
+</div>
+
+<!-- Contoh 2 -->
+<div class="p-4 bg-white rounded-xl border border-slate-200 space-y-3">
+<span class="bg-indigo-100 text-indigo-800 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">Ayat 2</span>
+<p class="text-base md:text-lg font-semibold leading-relaxed">
+"Kami menyapu dedaun kering di halaman rumah."
+</p>
+<div class="flex flex-wrap gap-2 pt-1">
+<span class="px-3 py-1 bg-blue-100 text-blue-800 border border-blue-300 rounded-full text-xs font-bold">Kami (Subjek)</span>
+<span class="px-3 py-1 bg-green-100 text-green-800 border border-green-300 rounded-full text-xs font-bold">menyapu (Kata Kerja)</span>
+<span class="px-3 py-1 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-full text-xs font-bold">dedaun kering (Objek)</span>
+<span class="px-3 py-1 bg-purple-100 text-purple-800 border border-purple-300 rounded-full text-xs font-bold">di halaman rumah (Keterangan)</span>
+</div>
+</div>
+</div>
+
+<div class="flex justify-center pt-2">
+<button onclick="navigate('pasif')" class="px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-extrabold rounded-2xl shadow-md flex items-center space-x-2 hover:opacity-90 transition">
+<span>Langkah Seterusnya: Belajar Formula Ayat Pasif</span>
+<i class="fa-solid fa-arrow-right"></i>
+</button>
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+5. SCREEN: BIJAK AYAT PASIF (FORMULA OHSK & OKSK)
+========================================================= -->
+<section id="screen-pasif" class="hidden max-w-4xl mx-auto space-y-6">
+<div class="flex justify-between items-center">
+<button onclick="navigate('utama')" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-sm font-bold hover:bg-slate-300 transition flex items-center space-x-2">
+<i class="fa-solid fa-arrow-left-long"></i>
+<span>Kembali</span>
+</button>
+</div>
+
+<div class="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-100 space-y-6">
+<div class="border-b pb-4">
+<h3 class="text-2xl font-black text-slate-800 flex items-center gap-2">
+<i class="fa-solid fa-circle-nodes text-purple-600"></i>
+<span>Bijak Formula Ayat Pasif</span>
+</h3>
+<p class="text-sm text-slate-500">Penukaran ayat pasif berbeza mengikut **Kata Ganti Nama Diri (KGND)** subjeknya!</p>
+</div>
+
+<!-- Dua Formula Besar -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Formula OHSK -->
+<div class="p-6 bg-amber-50/50 rounded-3xl border border-amber-200 space-y-4 shadow-sm flex flex-col justify-between">
+<div>
+<span class="bg-amber-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase">KGND 1 & 2</span>
+<h4 class="text-lg font-extrabold text-slate-800 mt-2">Formula OHSK (Oh Saya Ketawa Kuat!)</h4>
+<p class="text-xs text-slate-600 mt-1">Gunakan ini jika pembuat ialah diri sendiri/orang kedua: <i>saya, aku, kami, kita, kamu, anda, kalian</i>.</p>
+
+<div class="my-4 p-4 bg-white rounded-2xl border border-amber-300 text-center text-amber-900 font-extrabold text-base tracking-widest shadow-inner font-mono">
+OBJEK + KATA BANTU + SUBJEK + KATA KERJA
+</div>
+
+<p class="text-xs text-slate-700">Contoh Penukaran:</p>
+<p class="text-xs text-red-600 line-through mt-1">❌ Buku itu dibaca oleh saya. (SALAH)</p>
+<p class="text-xs text-emerald-600 font-bold">✅ Buku itu saya baca. (BETUL)</p>
+</div>
+<div class="pt-4 border-t border-amber-200/50 text-[11px] text-amber-700 italic font-medium">
+*Nota: Buang imbuhan meN- pada kata kerja (membaca jadi baca). Tiada perkataan "oleh".
+</div>
+</div>
+
+<!-- Formula OKSK -->
+<div class="p-6 bg-emerald-50/50 rounded-3xl border border-emerald-200 space-y-4 shadow-sm flex flex-col justify-between">
+<div>
+<span class="bg-emerald-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase">KGND 3</span>
+<h4 class="text-lg font-extrabold text-slate-800 mt-2">Formula OKSK (Ok Sekolah Kami!)</h4>
+<p class="text-xs text-slate-600 mt-1">Gunakan ini jika pembuat ialah pihak ketiga/benda/nama orang: <i>dia, mereka, beliau, baginda, ibu, kucing, Ahmad</i>.</p>
+
+<div class="my-4 p-4 bg-white rounded-2xl border border-emerald-300 text-center text-emerald-900 font-extrabold text-base tracking-widest shadow-inner font-mono">
+OBJEK + di-KATA KERJA + OLEH + SUBJEK
+</div>
+
+<p class="text-xs text-slate-700">Contoh Penukaran:</p>
+<p class="text-xs text-slate-500 mt-1">Aktif: Ahmad melukis potret itu.</p>
+<p class="text-xs text-emerald-600 font-bold">Pasif (OKSK): Potret itu dilukis oleh Ahmad. (BETUL)</p>
+</div>
+<div class="pt-4 border-t border-emerald-200/50 text-[11px] text-emerald-700 italic font-medium">
+*Nota: Sentiasa gunakan imbuhan pasif "di-" dan letakkan "oleh" sebelum pembuat.
+</div>
+</div>
+</div>
+
+<div class="flex justify-center pt-2">
+<button onclick="navigate('game')" class="px-8 py-4 bg-gradient-to-r from-amber-500 to-emerald-500 text-white font-extrabold rounded-2xl shadow-lg hover:shadow-emerald-500/20 transition transform active:scale-95 flex items-center space-x-2">
+<span>Main Permainan Digital Untuk Latih Tubi</span>
+<i class="fa-solid fa-gamepad animate-bounce"></i>
+</button>
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+6. SCREEN: GAMIFIKASI & PERMAINAN DIGITAL
+========================================================= -->
+<section id="screen-game" class="hidden max-w-4xl mx-auto space-y-6">
+<div class="flex justify-between items-center">
+<button id="btn-back-game" onclick="resetGameSelection()" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-sm font-bold hover:bg-slate-300 transition flex items-center space-x-2">
+<i class="fa-solid fa-arrow-left-long"></i>
+<span>Tukar Aras</span>
+</button>
+</div>
+
+<!-- FASA 1: PEMILIHAN ARAS -->
+<div id="game-selection-area" class="bg-white rounded-3xl p-8 shadow-2xl border border-slate-100 text-center space-y-6">
+<div>
+<span class="text-6xl"><i class="fa-solid fa-trophy text-amber-500"></i></span>
+<h3 class="text-3xl font-extrabold text-slate-800 mt-4">Pilih Aras Cabaran Anda</h3>
+<p class="text-sm text-slate-500">Selesaikan setiap tahap dengan jayanya untuk menuntut lencana kepakaran!</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+<!-- Aras Rendah -->
+<div class="border border-slate-200 rounded-3xl p-6 hover:shadow-2xl hover:border-teal-500 transition duration-300 flex flex-col justify-between bg-teal-50/10">
+<div class="text-center">
+<span class="text-4xl">🌱</span>
+<h4 class="font-bold text-lg text-slate-800 mt-2">Aras Rendah</h4>
+<p class="text-xs text-slate-500 mt-1">Fokus kepada ayat pendek dengan 3 unsur utama sahaja.</p>
+</div>
+<button onclick="startLevel('rendah')" class="mt-6 w-full py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl text-sm shadow-md">
+Mula Aras Rendah
+</button>
+</div>
+
+<!-- Aras Sederhana -->
+<div class="border border-slate-200 rounded-3xl p-6 hover:shadow-2xl hover:border-amber-500 transition duration-300 flex flex-col justify-between bg-amber-50/10">
+<div class="text-center">
+<span class="text-4xl">🪴</span>
+<h4 class="font-bold text-lg text-slate-800 mt-2">Aras Sederhana</h4>
+<p class="text-xs text-slate-500 mt-1">Mengandungi ayat yang mempunyai kata bantu dan penanda aspek.</p>
+</div>
+<button onclick="startLevel('sederhana')" class="mt-6 w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-sm shadow-md">
+Mula Aras Sederhana
+</button>
+</div>
+
+<!-- Aras Tinggi -->
+<div class="border border-slate-200 rounded-3xl p-6 hover:shadow-2xl hover:border-red-500 transition duration-300 flex flex-col justify-between bg-red-50/10">
+<div class="text-center">
+<span class="text-4xl">🌳</span>
+<h4 class="font-bold text-lg text-slate-800 mt-2">Aras Tinggi</h4>
+<p class="text-xs text-slate-500 mt-1">Ayat lebih mencabar dengan struktur keterangan yang panjang.</p>
+</div>
+<button onclick="startLevel('tinggi')" class="mt-6 w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-sm shadow-md">
+Mula Aras Tinggi
+</button>
+</div>
+</div>
+</div>
+
+<!-- FASA 2: ARENA PERMAINAN SEDANG BERLANGSUNG -->
+<div id="game-play-area" class="hidden bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-100 space-y-6">
+<!-- Header Game Info -->
+<div class="flex justify-between items-center border-b pb-4">
+<div>
+<span id="badge-aras" class="bg-indigo-100 text-indigo-800 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+Cabaran Aras
+</span>
+<h3 id="txt-soalan-number" class="font-extrabold text-slate-800 text-lg mt-1">Soalan 1 daripada 3</h3>
+</div>
+<div class="text-right">
+<p class="text-xs text-slate-400">Aras Pencapaian</p>
+<p id="txt-marks-awarded" class="text-xs font-bold text-emerald-600">+10 XP Setiap Jawapan Betul</p>
+</div>
+</div>
+
+<!-- Paparan Ayat Aktif -->
+<div class="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+<p class="text-xs text-slate-400 font-bold uppercase tracking-wider"><i class="fa-solid fa-quote-left text-teal-500 mr-1"></i>Ayat Aktif Asal:</p>
+<p id="txt-ayat-aktif-soalan" class="text-lg md:text-xl font-bold leading-relaxed text-slate-800">
+"Saya sedang membaca buku itu."
+</p>
+<!-- Visual Unsur Ayat Warna -->
+<div id="visual-unsur-ayat" class="pt-2 flex flex-wrap gap-2">
+<!-- Dimasukkan dinamik -->
+</div>
+</div>
+
+<!-- Dropzone Susunan Unsur Pasif -->
+<div class="space-y-3">
+<p class="text-sm font-bold text-slate-700 flex justify-between">
+<span><i class="fa-solid fa-puzzle-piece text-amber-500 mr-2"></i>Susun Unsur Ayat Pasif di bawah:</span>
+<span id="txt-formula-hint" class="text-xs text-indigo-500 font-bold bg-indigo-50 px-2 py-0.5 rounded-lg"></span>
+</p>
+<div id="dropzone-pilihan" class="min-h-[100px] p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300 flex flex-wrap gap-3 items-center">
+<!-- Kad terpilih akan muncul di sini -->
+</div>
+</div>
+
+<!-- Kad-kad Unsur Pilihan -->
+<div class="space-y-2">
+<p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kad-kad Pilihan Unsur:</p>
+<div id="card-selection-pool" class="flex flex-wrap gap-2.5">
+<!-- Kad pilihan dinamik -->
+</div>
+</div>
+
+<!-- Maklum Balas Keputusan Soalan -->
+<div id="game-feedback" class="hidden p-4 rounded-xl border text-sm font-bold">
+<!-- Dinamik mesej betul / salah -->
+</div>
+
+<!-- Butang Kawalan Permainan -->
+<div class="flex justify-between items-center pt-4 border-t">
+<button onclick="resetSelectedCards()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-bold flex items-center space-x-2">
+<i class="fa-solid fa-rotate-left"></i>
+<span>Set Semula Kad</span>
+</button>
+<div class="space-x-2">
+<button id="btn-check-answer" onclick="verifyArrangement()" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-xl text-sm shadow">
+Semak Jawapan ✔️
+</button>
+<button id="btn-next-question" onclick="goToNextQuestion()" class="hidden px-6 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-extrabold rounded-xl text-sm shadow">
+Seterusnya ➜
+</button>
+</div>
+</div>
+</div>
+
+<!-- FASA 3: TAMAT CABARAN ARAS -->
+<div id="game-completed-area" class="hidden bg-white rounded-3xl p-8 shadow-2xl border border-slate-100 text-center space-y-6">
+<div>
+<span class="text-6xl">🎉</span>
+<h3 class="text-3xl font-extrabold text-slate-800 mt-4">Tahniah! Aras Selesai</h3>
+<p class="text-sm text-slate-500">Pencapaian anda telah disimpan di peranti ini secara selamat.</p>
+</div>
+
+<div class="p-6 bg-slate-50 border border-slate-200 rounded-3xl max-w-sm mx-auto space-y-3">
+<p class="text-sm text-slate-600 font-medium">Keputusan Kuiz:</p>
+<p id="game-final-result" class="text-3xl font-black text-indigo-600">3 / 3 Betul</p>
+<p id="game-xp-earned" class="text-xs text-slate-400">Mata XP Diperoleh: <span class="font-bold text-emerald-600">+30 XP</span></p>
+</div>
+
+<div class="flex flex-col sm:flex-row justify-center gap-4">
+<button onclick="resetGameSelection()" class="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-extrabold rounded-2xl text-sm transition">
+Main Aras Lain 🎮
+</button>
+<button onclick="navigate('sijil')" class="px-6 py-3 bg-teal-600 hover:bg-teal-500 text-white font-extrabold rounded-2xl text-sm transition">
+Lihat Sijil & Laporan 🏆
+</button>
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+7. SCREEN: JOM CHAT BERSAMA AI (LOCAL INTELLIGENT RULE + SETTINGS)
+========================================================= -->
+<section id="screen-ai" class="hidden max-w-4xl mx-auto space-y-6">
+<div class="flex justify-between items-center">
+<button onclick="navigate('utama')" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-sm font-bold hover:bg-slate-300 transition flex items-center space-x-2">
+<i class="fa-solid fa-arrow-left-long"></i>
+<span>Kembali</span>
+</button>
+
+<!-- AI Key Setting Trigger -->
+<button onclick="toggleAISettings()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center space-x-1">
+<i class="fa-solid fa-gear"></i>
+<span>Tetapan API Gemini</span>
+</button>
+</div>
+
+<!-- Panel Tetapan API Key (Kerap kali tersembunyi) -->
+<div id="ai-settings-panel" class="hidden bg-white p-5 rounded-3xl border border-slate-200 shadow-xl space-y-4">
+<div class="flex justify-between items-center">
+<h4 class="font-extrabold text-sm text-slate-800"><i class="fa-solid fa-key text-teal-600 mr-2"></i>Konfigurasi Gemini API Key (Guru sahaja)</h4>
+<button onclick="toggleAISettings()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<p class="text-xs text-slate-500">Masukkan API Key Gemini anda sendiri untuk menghubungkan sembang Cikgu AI dengan enjin kecerdasan buatan Gemini sebenar. Sekiranya kosong, sistem akan menggunakan Cikgu AI Tempatan kami yang sedia pintar menukar ayat secara luar talian.</p>
+<div class="flex gap-2">
+<input 
+id="gemini-api-key-input" 
+type="password" 
+placeholder="Tampal API Key anda di sini (Contoh: AIzaSy...)" 
+class="flex-grow px-4 py-2 border rounded-xl text-xs focus:ring-1 focus:ring-teal-500 focus:outline-none font-mono"
+>
+<button onclick="saveGeminiKey()" class="px-4 py-2 bg-teal-600 text-white text-xs font-bold rounded-xl hover:bg-teal-500 transition">Simpan</button>
+</div>
+</div>
+
+<div class="bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 flex flex-col h-[550px]">
+<!-- Header Chat AI -->
+<div class="border-b pb-4 flex items-center space-x-3">
+<div class="bg-pink-100 text-pink-700 p-2.5 rounded-full text-xl font-bold">
+🤖
+</div>
+<div>
+<h3 class="font-extrabold text-slate-800">Cikgu AI P-REV</h3>
+<p id="chat-ai-subtitle" class="text-xs text-slate-400">Mod Pintar Tempatan Aktif</p>
+</div>
+</div>
+
+<!-- Area Chat Messages -->
+<div id="ai-chat-messages" class="flex-grow overflow-y-auto p-4 space-y-4 bg-slate-50 rounded-2xl border border-slate-200 my-4">
+<!-- Default AI Greeting -->
+<div class="flex justify-start">
+<div class="max-w-[75%] p-4 bg-white text-slate-700 border border-slate-200 rounded-2xl rounded-bl-none text-sm font-medium leading-relaxed shadow-sm">
+Hai! Saya <b>Cikgu AI P-REV</b>. Tulis sebarang soalan tentang cara menukar Ayat Aktif ke Ayat Pasif, atau uji ayat anda dengan saya sekarang! 😊
+</div>
+</div>
+</div>
+
+<!-- Input Arena Chat -->
+<form id="chat-form" class="flex gap-2">
+<input
+id="chat-input"
+type="text"
+placeholder="Contoh: Tukarkan 'Saya menyapu sampah' ke ayat pasif."
+class="flex-grow px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-pink-500 focus:outline-none text-sm transition font-medium"
+>
+<button
+type="submit"
+class="px-6 bg-pink-600 hover:bg-pink-500 text-white font-extrabold rounded-xl text-sm shadow transition duration-150 transform active:scale-95 flex items-center justify-center space-x-2"
+>
+<span>Hantar</span>
+<i class="fa-solid fa-paper-plane"></i>
+</button>
+</form>
+</div>
+</section>
+
+<!-- =========================================================
+8. SCREEN: LOCAL SCOREBOARD
+========================================================= -->
+<section id="screen-score" class="hidden max-w-2xl mx-auto space-y-6">
+<div class="flex justify-between items-center">
+<button onclick="navigate('utama')" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-sm font-bold hover:bg-slate-300 transition flex items-center space-x-2">
+<i class="fa-solid fa-arrow-left-long"></i>
+<span>Kembali</span>
+</button>
+</div>
+
+<div class="bg-white rounded-3xl p-6 shadow-2xl border border-slate-100 space-y-4">
+<div class="text-center border-b pb-4">
+<span class="text-4xl">🏆</span>
+<h3 class="text-2xl font-black text-slate-800 mt-2">Papan Kedudukan Tempatan</h3>
+<p class="text-xs text-slate-400 mt-1">Kemajuan disimpan secara automatik dalam simpanan pelayar.</p>
+</div>
+
+<div id="scoreboard-list" class="space-y-2.5">
+<!-- Rekod murid dijanakan oleh JS -->
+</div>
+</div>
+</section>
+
+<!-- =========================================================
+9. SCREEN: LAPORAN PERKEMBANGAN & SIJIL DIGITAL
+========================================================= -->
+<section id="screen-sijil" class="hidden max-w-4xl mx-auto space-y-6">
+<div class="flex justify-between items-center no-print">
+<button onclick="navigate('utama')" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-sm font-bold hover:bg-slate-300 transition flex items-center space-x-2">
+<i class="fa-solid fa-arrow-left-long"></i>
+<span>Kembali</span>
+</button>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Status & Lencana Sidebar -->
+<div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-2xl space-y-6 no-print">
+<div>
+<h4 class="font-extrabold text-slate-800 text-lg border-b pb-2"><i class="fa-solid fa-chart-line text-emerald-600 mr-2"></i>Penguasaan Anda</h4>
+<p class="text-xs text-slate-400 mt-1">Status penyelesaian latihan</p>
+</div>
+
+<div class="space-y-3">
+<p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Status Aras Latihan:</p>
+<div class="flex justify-between items-center p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-sm">
+<span class="font-bold text-slate-700">🌱 Aras Rendah</span>
+<span id="badge-status-rendah" class="font-bold text-slate-400">❌ Belum Mula</span>
+</div>
+<div class="flex justify-between items-center p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-sm">
+<span class="font-bold text-slate-700">🪴 Aras Sederhana</span>
+<span id="badge-status-sederhana" class="font-bold text-slate-400">❌ Belum Mula</span>
+</div>
+<div class="flex justify-between items-center p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-sm">
+<span class="font-bold text-slate-700">🌳 Aras Tinggi</span>
+<span id="badge-status-tinggi" class="font-bold text-slate-400">❌ Belum Mula</span>
+</div>
+</div>
+
+<div class="space-y-3">
+<p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Koleksi Lencana:</p>
+<div id="lencana-list-sijil" class="flex flex-wrap gap-2">
+<!-- Senarai lencana -->
+</div>
+</div>
+</div>
+
+<!-- Visual Sijil Berbingkai Mewah -->
+<div id="print-area" class="md:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-2xl p-8 relative overflow-hidden flex flex-col justify-between min-h-[500px]">
+<!-- Bingkai Klasik Sijil -->
+<div class="absolute inset-0 border-[16px] border-slate-900 m-2 pointer-events-none"></div>
+<div class="absolute inset-0 border-[2px] border-amber-400 m-5 pointer-events-none"></div>
+
+<div class="relative z-10 text-center space-y-6 my-auto px-6 font-serif-title">
+<div>
+<h2 class="text-amber-500 text-3xl font-bold tracking-widest uppercase">Sijil Penghargaan</h2>
+<p class="text-slate-400 text-xs font-bold tracking-widest mt-1 uppercase font-sans">Sijil Penguasaan Pembinaan Ayat Pasif KIT P-REV</p>
+</div>
+
+<div class="space-y-2">
+<p class="text-xs text-slate-500 italic">Dengan ini diperakui dan dianugerahkan kepada</p>
+<h3 id="cert-student-name" class="text-2xl font-bold text-slate-800 border-b border-slate-300 pb-2 max-w-md mx-auto">Sila log masuk</h3>
+<p id="cert-student-class" class="text-xs text-slate-500 font-bold font-sans">Daripada Kelas: - </p>
+</div>
+
+<div class="max-w-md mx-auto">
+<p class="text-xs md:text-sm text-slate-600 leading-relaxed font-medium font-sans">
+kerana telah berjaya menyempurnakan program pengenalan inovasi bahasa melayu, latih tubi menyusun ayat aktif kepada ayat pasif mengikut kod warna dan formula tatabahasa yang tepat.
+</p>
+</div>
+
+<div class="flex justify-center items-center space-x-6 font-sans">
+<div class="text-center">
+<p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Skor Kumulatif</p>
+<p id="cert-student-score" class="text-xl font-extrabold text-emerald-600">0 XP</p>
+</div>
+<div class="h-8 w-px bg-slate-300"></div>
+<div class="text-center">
+<p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Gred Pencapaian</p>
+<p id="cert-student-grade" class="text-xl font-extrabold text-indigo-600">HARAPAN (C)</p>
+</div>
+</div>
+
+<div class="flex justify-between items-end text-left max-w-sm mx-auto pt-6 text-[9px] text-slate-400 font-sans">
+<div>
+<p class="font-bold border-t border-slate-300 pt-1">CIKGU BAHASA MELAYU</p>
+<p>Penyelaras Inovasi KIT P-REV</p>
+</div>
+<div class="text-right">
+<p>Tarikh Penjanaan Sijil:</p>
+<p id="cert-date" class="font-bold text-slate-600">-</p>
+</div>
+</div>
+</div>
+
+<div class="relative z-10 mx-auto mt-6 no-print font-sans">
+<button onclick="window.print()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center space-x-2">
+<i class="fa-solid fa-print"></i>
+<span>Cetak / Simpan Sijil PDF</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+
+<!-- MODAL PENDAFTARAN/PINDAH DATA -->
+<div id="sync-modal" class="fixed inset-0 bg-slate-950/60 z-50 flex items-center justify-center p-4 hidden no-print">
+<div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+<div class="flex justify-between items-center border-b pb-3">
+<h3 class="font-extrabold text-slate-800 text-lg flex items-center gap-2">
+<i class="fa-solid fa-shuffle text-teal-600"></i>
+<span>Pindah Kemajuan (Multi-Peranti)</span>
+</h3>
+<button onclick="closeSyncModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+</div>
+
+<div class="space-y-4">
+<!-- Eksport -->
+<div class="p-4 bg-slate-50 rounded-2xl space-y-2">
+<h4 class="font-bold text-xs text-slate-700">Langkah A: Salin Kod Peranti Semasa</h4>
+<p class="text-[10px] text-slate-500 leading-relaxed">Salin kod kemajuan di bawah untuk dipindahkan ke peranti/browser baharu anda supaya data tidak hilang.</p>
+<div class="flex gap-2">
+<input id="export-code-input" readonly type="text" class="flex-grow p-2 border rounded-xl text-xs bg-slate-100 font-mono focus:outline-none">
+<button onclick="copyExportCode()" class="px-3 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl transition">Salin</button>
+</div>
+</div>
+
+<!-- Import -->
+<div class="p-4 bg-teal-50/50 border border-teal-200 rounded-2xl space-y-2">
+<h4 class="font-bold text-xs text-teal-800">Langkah B: Masukkan Kod Dari Peranti Lama</h4>
+<p class="text-[10px] text-teal-600 leading-relaxed">Tampalkan kod kemajuan lama anda di sini untuk menyambung semula latihan anda.</p>
+<textarea id="import-code-input" rows="2" placeholder="Tampal kod panjang di sini..." class="w-full p-2 border border-teal-300 rounded-xl text-xs font-mono focus:outline-none"></textarea>
+<button onclick="importProgress()" class="w-full py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl transition">Import & Segarkan Semula</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- FOOTER UTAMA -->
+<footer class="bg-slate-900 text-slate-400 text-center py-5 px-6 border-t border-slate-800 text-xs no-print mt-12">
+<div class="max-w-7xl mx-auto space-y-1.5">
+<p class="font-semibold text-slate-300">© 2026 KIT P-REV - Kit Inovasi Pendidikan Bahasa Melayu</p>
+<p class="text-[10px] text-slate-500">Direka bentuk khas untuk memantapkan pemahaman dan penulisan ayat pasif (Tahun 4-6 & Tingkatan 1-3)</p>
+</div>
+</footer>
+
+<!-- PROGRAM UTAMA JAVASCRIPT (TERBINA DALAM & SELESA) -->
+<script>
+// DATA NOTA SLAID
+const NOTA_SLAID = [
+{
+tajuk: "Pengenalan Ayat Aktif & Ayat Pasif",
+icon: "fa-book-open",
+color: "text-teal-600",
+html: `
+<div class="space-y-4 text-slate-700 text-sm md:text-base">
+<p class="font-bold text-teal-600 text-lg flex items-center gap-2"><i class="fa-solid fa-circle-info"></i> Apakah Maksud Ayat Aktif dan Ayat Pasif?</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+<h4 class="font-extrabold text-blue-800 mb-2"><i class="fa-solid fa-bullhorn mr-2"></i>Ayat Aktif</h4>
+<p class="text-xs leading-relaxed">Ayat yang menekankan <strong>subjek (pembuat)</strong> sebagai unsur utama. Menggunakan kata kerja berimbuhan <strong>meN- (membaca, melukis, menyapu)</strong>.</p>
+<div class="mt-3 p-2 bg-white rounded-lg border text-[11px] font-bold">
+Contoh: <span class="text-blue-600">Saya</span> <span class="text-green-600">membaca</span> <span class="text-yellow-600">buku itu</span>.
+</div>
+</div>
+<div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+<h4 class="font-extrabold text-amber-800 mb-2"><i class="fa-solid fa-bullseye mr-2"></i>Ayat Pasif</h4>
+<p class="text-xs leading-relaxed">Ayat yang mengutamakan <strong>objek (penerima kesan perbuatan)</strong> sebagai unsur utama. Struktur berubah mengikut jenis Kata Ganti Nama Diri.</p>
+<div class="mt-3 p-2 bg-white rounded-lg border text-[11px] font-bold">
+Contoh: <span class="text-yellow-600">Buku itu</span> <span class="text-blue-600">saya</span> <span class="text-green-600">baca</span>.
+</div>
+</div>
+</div>
+</div>
+`
+},
+{
+tajuk: "Konsep Kod Warna (Color Coding)",
+icon: "fa-palette",
+color: "text-blue-600",
+html: `
+<div class="space-y-4 text-slate-700 text-sm md:text-base">
+<p class="font-bold text-blue-600 text-lg flex items-center gap-2"><i class="fa-solid fa-palette"></i> Mudahnya Dengan Kod Warna!</p>
+<p class="text-xs">KIT P-REV menggunakan 4 kod warna utama untuk memudahkan murid mencerakinkan setiap unsur penting dalam ayat:</p>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+<div class="p-3 bg-blue-500 text-white rounded-xl font-bold text-xs shadow-md">SUBJEK (BIRU)</div>
+<div class="p-3 bg-green-500 text-white rounded-xl font-bold text-xs shadow-md">KATA KERJA (HIJAU)</div>
+<div class="p-3 bg-yellow-500 text-slate-900 rounded-xl font-bold text-xs shadow-md">OBJEK (KUNING)</div>
+<div class="p-3 bg-purple-500 text-white rounded-xl font-bold text-xs shadow-md">KETERANGAN (UNGU)</div>
+</div>
+<div class="p-4 bg-slate-50 border rounded-2xl">
+<p class="font-bold text-xs text-slate-700 mb-1">Menganalisis Unsur Ayat Aktif:</p>
+<p class="text-sm font-bold text-slate-800">"Siti menyapu sampah di dapur."</p>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="px-2 py-0.5 bg-blue-100 text-blue-800 border border-blue-300 rounded text-xs font-bold">Siti (S)</span>
+<span class="px-2 py-0.5 bg-green-100 text-green-800 border border-green-300 rounded text-xs font-bold">menyapu (K)</span>
+<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded text-xs font-bold">sampah (O)</span>
+<span class="px-2 py-0.5 bg-purple-100 text-purple-800 border border-purple-300 rounded text-xs font-bold">di dapur (K)</span>
+</div>
+</div>
+</div>
+`
+},
+{
+tajuk: "Formula KGND 1 & 2: O-H-S-K",
+icon: "fa-flask",
+color: "text-amber-500",
+html: `
+<div class="space-y-4 text-slate
+...
